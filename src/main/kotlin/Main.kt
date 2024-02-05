@@ -1,28 +1,29 @@
 package org.example
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
-import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+
 fun main() {
-    Thread{ server() }.start()
+    val server = ServerSocket(9999)
+    while(true){
+        val client = server.accept()
+        Thread{ server(client) }.start()
+    }
 }
 
-fun server() {
-    val server = ServerSocket(9999)
-    val fileName = "client.txt"
-    val client = server.accept()
-    while (true){
-        val output = PrintWriter(client.getOutputStream(), true)
-//        val input = BufferedReader(InputStreamReader(client.inputStream))
-        val content = Merger().receiveFile(client, fileName)
-        if (content.equals("Exit")){
-            client.close()
-            break
-        }
-        output.println(content)
+fun server(client: Socket) {
+    val fileName = "img.jpeg"
+    val input = BufferedReader(InputStreamReader(client.inputStream))
+    var buffer = byteArrayOf()
+    var line = input.readLine()
+    while (!line.isNullOrEmpty())
+    {
+        println(line)
+        buffer += line.toByte()
+        line = input.readLine()
     }
+    File(fileName).writeBytes(buffer)
 }
