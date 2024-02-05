@@ -13,17 +13,16 @@ fun main() {
 
 fun server() {
     val server = ServerSocket(9999)
-
+    val fileName = "client.txt"
     val client = server.accept()
     while (true){
         val output = PrintWriter(client.getOutputStream(), true)
-        val input = BufferedReader(InputStreamReader(client.inputStream))
-        val content = input.readLine()
+//        val input = BufferedReader(InputStreamReader(client.inputStream))
+        val content = Merger().receiveFile(client, fileName)
         if (content.equals("Exit")){
+            client.close()
             break
         }
         output.println(content)
     }
-    client.close()
-
 }
