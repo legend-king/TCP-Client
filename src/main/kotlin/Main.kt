@@ -5,7 +5,7 @@ import java.util.*
 
 fun main() {
     println("Application running on ${Thread.currentThread().name}")
-    val port = 9998
+    val port = 9999
     val targetPath = "downloads"
     val server = ServerSocket(port)
     println("Server listening on port $port")
