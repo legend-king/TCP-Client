@@ -22,15 +22,15 @@ fun downloadFile(port: Int, targetPath: String, server: ServerSocket){
             val inputStream = DataInputStream(client.getInputStream())
             val comparisonValue:Byte = 10
             val fileName:ByteArray = ByteArray(1000)
-            var x = inputStream.readByte()
-            var j=0
-            while (x!=comparisonValue){
-                fileName[j]=x
-                j+=1
-                x=inputStream.readByte()
+            var byte = inputStream.readByte()
+            var byteArraySize=0
+            while (byte!=comparisonValue){
+                fileName[byteArraySize]=byte
+                byteArraySize+=1
+                byte=inputStream.readByte()
             }
-            println(fileName.decodeToString(0,j))
-            val actualFileName = fileName.decodeToString(0,j)
+            println(fileName.decodeToString(0,byteArraySize))
+            val actualFileName = fileName.decodeToString(0,byteArraySize)
             var byteContent = inputStream.readNBytes(100000000)
             val outputFile = File("db/${renameFileWithUUID(actualFileName)}")
 
