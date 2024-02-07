@@ -1,90 +1,53 @@
-//package org.example
-//import java.io.*
-//import java.net.ServerSocket
-//import java.net.Socket
-//import java.nio.file.Files
-//import java.nio.file.Paths
-//import kotlin.reflect.typeOf
-//
-////TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-//// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-//fun main() {
-//    val server = ServerSocket(9999)
-//
-//
-////    Thread{ server() }.start()
-//    while (true) {
-//        val client = server.accept()
-//        Thread{ server(client) }.start()
-//    }
-//}
-//fun server(client: Socket) {
-////    val server = ServerSocket(9999)
-////
-////    val client = server.accept()
-////    while (true){
-//        val output = PrintWriter(client.getOutputStream(), true)
-//        val fileName = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-//
-////        val content = fileName.readLine()
-//        println(fileName)
-//        var fileContent = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-////        println(fileContent)
-//
-//    if (!fileContent.isNullOrEmpty()){
-//        var dummy:ByteArray = ByteArray(fileContent.split(' ').size)
-//        var j=0
-//        fileContent=fileContent.replace('[',' ')
-//        fileContent=fileContent.replace(',',' ')
-//        fileContent=fileContent.replace(']',' ')
-//        fileContent = fileContent.strip()
-//        for (i in fileContent.split("  ")){
-//            dummy.set(j,i.toByte())
-//            j+=1
-//        }
-//        Files.write(Paths.get(fileName),dummy)
-//    }
-////        print(fileContent)
-//
-//
-//        output.println("File Received")
-////    }
-//    client.close()
-//
-//}
-//
-//fun saveByteArrayToFile(byteArray: ByteArray, fileName: String) {
-//    val file = FileOutputStream(fileName)
-//    file.write(byteArray)
-//    file.close()
-//}
-
 package org.example
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
-import java.net.ServerSocket
-import java.net.Socket
-
+import java.io.*
+import java.net.ServerSocket;
+import java.util.*
 
 fun main() {
-    val server = ServerSocket(9999)
-    while(true){
-        val client = server.accept()
-        Thread{ server(client) }.start()
-    }
+    println("Application running on ${Thread.currentThread().name}")
+    val port = 9998
+    val targetPath = "downloads"
+    val server = ServerSocket(port)
+    println("Server listening on port $port")
+
+    downloadFile(port, targetPath, server)
 }
 
-fun server(client: Socket) {
-    val fileName = BufferedReader(InputStreamReader(client.inputStream)).readLine()
-    val input = BufferedReader(InputStreamReader(client.inputStream))
-    var buffer = byteArrayOf()
-    var line = input.readLine()
-    while (!line.isNullOrEmpty())
-    {
-//        println(line)
-        buffer += line.toByte()
-        line = input.readLine()
+fun downloadFile(port: Int, targetPath: String, server: ServerSocket){
+    try {
+        while (true){
+            val client = server.accept()
+            println("Request running on ${Thread.currentThread().name}")
+            println("Client connected: ${client.inetAddress.hostAddress}")
+            val inputStream = DataInputStream(client.getInputStream())
+            val comparisonValue:Byte = 10
+            val fileName:ByteArray = ByteArray(1000)
+            var x = inputStream.readByte()
+            var j=0
+            while (x!=comparisonValue){
+                fileName[j]=x
+                j+=1
+                x=inputStream.readByte()
+            }
+            println(fileName.decodeToString(0,j))
+            val actualFileName = fileName.decodeToString(0,j)
+            var byteContent = inputStream.readNBytes(100000000)
+            val outputFile = File("db/${renameFileWithUUID(actualFileName)}")
+
+            while (byteContent.isNotEmpty()){
+                outputFile.appendBytes(byteContent)
+                byteContent = inputStream.readNBytes(100000000)
+            }
+            println("Client ${client.inetAddress.hostAddress} disconnected")
+        }
+    } catch (e: Exception){
+        e.printStackTrace()
     }
-    File(fileName).writeBytes(buffer)
+
+}
+
+fun renameFileWithUUID(filename: String): String{
+    val name = filename.split(".")
+    val uuidFile = "${name[0]}-${UUID.randomUUID()}.${name[1]}"
+    return uuidFile
 }
